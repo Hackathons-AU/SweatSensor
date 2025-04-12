@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Health Score Predictor</title>
+</head>
+<body>
+  <h1>Health Score Predictor</h1>
+
+  <form id="healthForm">
+    <label>Sodium: <input type="number" name="Sodium" required /></label><br />
+    <label>Glucose: <input type="number" name="Glucose" required /></label><br />
+    <label>Hydration: <input type="number" name="Hydration" required /></label><br />
+    <label>Lactate: <input type="number" name="Lactate" required /></label><br />
+    <button type="submit">Predict</button>
+  </form>
+
+  <h2 id="result"></h2>
+
+  <script>
+    document.getElementById("healthForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const form = e.target;
+      const data = {
+        Sodium: parseFloat(form.Sodium.value),
+        Glucose: parseFloat(form.Glucose.value),
+        Hydration: parseFloat(form.Hydration.value),
+        Lactate: parseFloat(form.Lactate.value),
+      };
+
+      const resultElement = document.getElementById("result");
+      resultElement.textContent = "Predicting...";
+
+      try {
+        const response = await fetch("/admin/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          // Handle HTTP errors
+          const errorText = await response.text();
+          throw new Error(`Server Error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const result = await response.json();
+
+        if (typeof result.healthScore === "number") {
+          resultElement.textContent = "Predicted Health Score: " + result.healthScore.toFixed(2);
+        } else {
+          throw new Error("Invalid response format: 'healthScore' is missing or not a number.");
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+        resultElement.textContent = "Error predicting health score.";
+      }
+    });
+  </script>
+</body>
+</html>
+
