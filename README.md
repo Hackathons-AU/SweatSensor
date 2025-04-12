@@ -1,11 +1,11 @@
 # SweatSensor
-Files in #other are :
+## Files in <ins> other </ins> are :
 
 gen.py which generates a dataset
 synthetic_sweat_data.csv which is the generated dataset
 trainin.py which is the model trainer
 
-Files in #server are :
+## Files in <ins> server </ins> are :
 
 model.json which is the trained model
 predict.py which predicts values based on the trained model
