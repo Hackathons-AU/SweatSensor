@@ -16,7 +16,7 @@ app.post("/admin/predict", (req, res) => {
   const inputData = req.body;
   console.log("Received:", inputData);
 
-  const py = spawn("python3", ["predict.py"]);
+  const py = spawn("python", ["predict.py"]);
   let result = "";
 
   py.stdin.write(JSON.stringify(inputData));

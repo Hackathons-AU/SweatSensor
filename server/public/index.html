@@ -3,25 +3,433 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Health Score Predictor</title>
+  <title>BioMetric Health Analyzer</title>
+  <style>
+    :root {
+      --primary: #00e5ff;
+      --secondary: #2979ff;
+      --background: #0a192f;
+      --panel: #172a45;
+      --text: #e6f1ff;
+      --accent: #64ffda;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.03) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(41, 121, 255, 0.03) 0%, transparent 20%);
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 800px;
+      padding: 2rem;
+      background-color: var(--panel);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      z-index: 1;
+    }
+    
+    h1 {
+      color: var(--text);
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    h1 span {
+      color: var(--primary);
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .input-group {
+      position: relative;
+      overflow: visible;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .input-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      overflow: visible;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 1rem;
+      padding-right: 80px; /* Increased to accommodate unit and icon */
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.1rem;
+      outline: none;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+    
+    .input-container::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+    
+    .input-group:hover .input-container::after {
+      transform: scaleX(1);
+    }
+    
+    .input-meta {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .unit {
+      color: var(--primary);
+      font-size: 0.8rem;
+      opacity: 0.7;
+      white-space: nowrap;
+    }
+    
+    .scan-btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: var(--background);
+      font-weight: bold;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .scan-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+    }
+    
+    .scan-btn::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(30deg);
+      transition: all 0.6s ease;
+    }
+    
+    .scan-btn:hover::after {
+      left: 100%;
+    }
+    
+    .result-container {
+      margin-top: 2rem;
+      text-align: center;
+      padding: 1.5rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .result-hidden {
+      opacity: 0;
+      height: 0;
+      min-height: 0;
+      padding: 0;
+      margin: 0;
+      transition: all 0.5s ease;
+    }
+    
+    .result-visible {
+      opacity: 1;
+      transition: all 0.5s ease;
+    }
+    
+    .result-text {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .scanning {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 1.2rem;
+    }
+    
+    .scanning::after {
+      content: "";
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(0, 229, 255, 0.3);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .error {
+      color: #ff5252;
+    }
+    
+    .score-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    
+    .score-number {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .health-status {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+    
+    .progress-pulse {
+      background: linear-gradient(90deg, var(--panel), var(--primary), var(--panel));
+      background-size: 400% 400%;
+      animation: pulse 1.5s ease infinite;
+    }
+    
+    @keyframes pulse {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .parameter-info {
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 0.9rem;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .tooltip {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      right: 0;
+      background: var(--panel);
+      padding: 0.8rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      width: 220px;
+      font-size: 0.8rem;
+      border: 1px solid var(--primary);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .parameter-info:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+        width: 95%;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .input-group input {
+        padding-right: 75px;
+        font-size: 1rem;
+      }
+      
+      .score-display {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .input-group input {
+        padding-right: 65px;
+        font-size: 0.9rem;
+      }
+      
+      .unit {
+        font-size: 0.7rem;
+      }
+      
+      .parameter-info {
+        width: 18px;
+        height: 18px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Health Score Predictor</h1>
-
-  <form id="healthForm">
-    <label>Sodium: <input type="number" name="Sodium" required /></label><br />
-    <label>Glucose: <input type="number" name="Glucose" required /></label><br />
-    <label>Hydration: <input type="number" name="Hydration" required /></label><br />
-    <label>Lactate: <input type="number" name="Lactate" required /></label><br />
-    <button type="submit">Predict</button>
-  </form>
-
-  <h2 id="result"></h2>
-
+  <div class="container">
+    <h1><span>Bio</span>Metric Health Analyzer</h1>
+    
+    <form id="healthForm">
+      <div class="form-grid">
+        <div class="input-group">
+          <label for="sodium">Sodium</label>
+          <div class="input-container">
+            <input type="number" id="sodium" name="Sodium" required placeholder="135-145" />
+            <div class="input-meta">
+              <span class="unit">mmol/L</span>
+              <div class="parameter-info">i
+                <div class="tooltip">Normal range: 135-145 mmol/L. Critical for nerve and muscle function.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="glucose">Glucose</label>
+          <div class="input-container">
+            <input type="number" id="glucose" name="Glucose" required placeholder="70-100" />
+            <div class="input-meta">
+              <span class="unit">mg/dL</span>
+              <div class="parameter-info">i
+                <div class="tooltip">Normal range: 70-100 mg/dL. Primary energy source for cells.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="hydration">Hydration</label>
+          <div class="input-container">
+            <input type="number" id="hydration" name="Hydration" required placeholder="0-100" />
+            <div class="input-meta">
+              <span class="unit">%</span>
+              <div class="parameter-info">i
+                <div class="tooltip">Optimal range: 60-80%. Measures body water content.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="lactate">Lactate</label>
+          <div class="input-container">
+            <input type="number" id="lactate" name="Lactate" required placeholder="0.5-2.2" />
+            <div class="input-meta">
+              <span class="unit">mmol/L</span>
+              <div class="parameter-info">i
+                <div class="tooltip">Normal range: 0.5-2.2 mmol/L. Produced during intense exercise or low oxygen.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button type="submit" class="scan-btn">Analyze Biomarkers</button>
+    </form>
+    
+    <div id="result-container" class="result-container result-hidden">
+      <div id="result" class="result-text"></div>
+      <div id="score-display" class="score-display" style="display: none;">
+        <div id="score-number" class="score-number">0.0</div>
+        <div id="health-status" class="health-status"></div>
+      </div>
+    </div>
+  </div>
+  
   <script>
     document.getElementById("healthForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-
+      
       const form = e.target;
       const data = {
         Sodium: parseFloat(form.Sodium.value),
@@ -29,36 +437,100 @@
         Hydration: parseFloat(form.Hydration.value),
         Lactate: parseFloat(form.Lactate.value),
       };
-
+      
+      const resultContainer = document.getElementById("result-container");
       const resultElement = document.getElementById("result");
-      resultElement.textContent = "Predicting...";
-
+      const scoreDisplay = document.getElementById("score-display");
+      const scoreNumber = document.getElementById("score-number");
+      const healthStatus = document.getElementById("health-status");
+      
+      // Show the result container with loading animation
+      resultContainer.classList.remove("result-hidden");
+      resultContainer.classList.add("result-visible");
+      resultElement.innerHTML = '<div class="scanning">Analyzing biomarkers</div>';
+      scoreDisplay.style.display = "none";
+      healthStatus.textContent = "";
+      
       try {
         const response = await fetch("/admin/predict", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-
+        
         if (!response.ok) {
-          // Handle HTTP errors
           const errorText = await response.text();
           throw new Error(`Server Error: ${response.status} ${response.statusText} - ${errorText}`);
         }
-
+        
         const result = await response.json();
-
+        
         if (typeof result.healthScore === "number") {
-          resultElement.textContent = "Predicted Health Score: " + result.healthScore.toFixed(2);
+          const score = result.healthScore;
+          
+          // Wait for a visual effect
+          setTimeout(() => {
+            resultElement.textContent = "Analysis Complete";
+            scoreDisplay.style.display = "flex";
+            
+            // Animate the score
+            let currentScore = 0;
+            const targetScore = score;
+            const duration = 1500; // milliseconds
+            const increment = targetScore / (duration / 16);
+            
+            // Set score color and health status text
+            let statusText = "";
+            let scoreColor = "";
+            
+            if (score < 40) {
+              statusText = "Critical Attention Required";
+              scoreColor = "#ff5252";
+            } else if (score < 60) {
+              statusText = "Health Warning";
+              scoreColor = "#ffeb3b";
+            } else if (score < 80) {
+              statusText = "Adequate";
+              scoreColor = "#8bc34a";
+            } else {
+              statusText = "Optimal Health";
+              scoreColor = "#00e676";
+            }
+            
+            scoreNumber.style.color = scoreColor;
+            
+            const scoreAnimation = setInterval(() => {
+              currentScore += increment;
+              if (currentScore >= targetScore) {
+                currentScore = targetScore;
+                clearInterval(scoreAnimation);
+                healthStatus.textContent = statusText;
+              }
+              scoreNumber.textContent = currentScore.toFixed(1);
+            }, 16);
+            
+          }, 1500);
+          
         } else {
           throw new Error("Invalid response format: 'healthScore' is missing or not a number.");
         }
       } catch (err) {
         console.error("Fetch error:", err);
-        resultElement.textContent = "Error predicting health score.";
+        resultElement.innerHTML = '<div class="error">Error analyzing biomarkers</div>';
       }
+    });
+    
+    // Add some ambient animation to inputs
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        this.parentElement.classList.add('progress-pulse');
+      });
+      
+      input.addEventListener('blur', function() {
+        this.parentElement.classList.remove('progress-pulse');
+      });
     });
   </script>
 </body>
 </html>
-
